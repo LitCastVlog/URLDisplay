@@ -12,7 +12,7 @@ build using [Android Studio](https://developer.android.com/studio) API 30 (andro
 - use volume key to initiate external screen video (same as VLC, haven't figured out complete autoplay yet)
 - external display works while app is in background
 - dpad content navigation (while screen opened)
-- 
+ 
 ### enter desired URL, save
 <img src="./screenshots/urlprompt.jpg" width="50%"/>
 

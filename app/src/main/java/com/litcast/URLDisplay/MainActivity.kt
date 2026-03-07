@@ -1,4 +1,4 @@
-package com.litcast.ws4kp
+package com.litcast.URLDisplay
 
 import android.annotation.SuppressLint
 import android.app.Activity
@@ -36,7 +36,7 @@ class MainActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        prefs = getSharedPreferences("ws4kp_prefs", Context.MODE_PRIVATE)
+        prefs = getSharedPreferences("url_prefs", Context.MODE_PRIVATE)
         url = prefs.getString("url", null)
 
         window.addFlags(
@@ -51,7 +51,7 @@ class MainActivity : Activity() {
                     or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY)
 
         setContentView(R.layout.activity_main)
-        webView = findViewById(R.id.weatherView)
+        webView = findViewById(R.id.urlView)
 
         val settings: WebSettings = webView.settings
         settings.javaScriptEnabled = true
@@ -65,23 +65,23 @@ class MainActivity : Activity() {
         if (url == null) {
             promptForUrl()
         } else {
-            loadWeather(url!!)
+            loadLink(url!!)
             mirrorToExternalDisplay()
         }
 
         handler.postDelayed(reloadRunnable, 600_000)
     }
 
-    private fun loadWeather(loadUrl: String) {
+    private fun loadLink(loadUrl: String) {
         webView.loadUrl(loadUrl)
     }
 
     private fun promptForUrl() {
         val input = EditText(this)
-        input.hint = "Enter WeatherStar KIOSK URL"
+        input.hint = "Enter URL to display"
 
         AlertDialog.Builder(this)
-            .setTitle("Set Weather URL")
+            .setTitle("Set URL")
             .setView(input)
             .setCancelable(false)
             .setPositiveButton("Save") { _, _ ->
@@ -95,7 +95,7 @@ class MainActivity : Activity() {
                 prefs.edit().putString("url", entered).apply()
 
                 url = entered
-                loadWeather(entered)
+                loadLink(entered)
 
                 mirrorToExternalDisplay()
             }
@@ -108,7 +108,7 @@ class MainActivity : Activity() {
 
         for (display: Display in displays) {
             if (display.displayId != Display.DEFAULT_DISPLAY) {
-                val presentation = WeatherPresentation(this, display)
+                val presentation = UrlPresentation(this, display)
                 presentation.show()
             }
         }

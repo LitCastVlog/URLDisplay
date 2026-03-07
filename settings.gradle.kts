@@ -19,6 +19,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "WeatherStar 4000+"
+rootProject.name = "URLDisplay"
 include(":app")
  

@@ -1,4 +1,4 @@
-# URLDisplay <img src="./CS22URLDisplay.png" width="10%"/> 
+# URLDisplay <img src="./CS22URLDisplay.png" width="15%"/> 
 
 
 web wrapper designed for CAT/Unifone S22 Flip's outer display, no root needed. 

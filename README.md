@@ -3,8 +3,8 @@
 
 web wrapper designed for CAT/Unifone S22 Flip's outer display, no root needed. 
 
-<img src="./screenshots/externalscreen.gif" width="50%"/>
-<img src="./screenshots/screenshot.jpg" width="50%"/>
+<img src="./screenshots/externalscreen.gif" width="20%"/><img src="./screenshots/externalscreen2.gif" width="23%"/><img src="./screenshots/screenshot.jpg" width="30%"/>
+
 
 ## Installation
 build using [Android Studio](https://developer.android.com/studio) API 30 (android 11+) or try [experimental debug apk](https://github.com/LitCastVlog/URLDisplay/releases/tag/v1.0) in releases (will prompt for KIOSK URL on first launch, clear app data to reset url)

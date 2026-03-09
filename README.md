@@ -4,7 +4,7 @@
 web wrapper designed for CAT/Unifone S22 Flip's outer display, no root needed. 
 ## This verison lets you have two webviews onscreen (for RSS feed tickers, etc)
 
-<img src="./screenshots/externalscreen.gif" width="20%"/><img src="./screenshots/externalscreen2.gif" width="23%"/><img src="./screenshots/screenshot.jpg" width="30%"/>
+<img src="./screenshots/externalscreen.gif" width="40%"/>
 
 
 ## Installation

@@ -1,155 +1,177 @@
-package com.litcast.URLDisplay
+package com.litcast.URLDisplayDual
 
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
-import android.hardware.display.DisplayManager
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.view.Display
-import android.view.KeyEvent
+import android.util.TypedValue
 import android.view.View
 import android.view.WindowManager
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.EditText
+import android.widget.LinearLayout
 
 class MainActivity : Activity() {
 
-    private lateinit var webView: WebView
+    private lateinit var mainView: WebView
+    private lateinit var topBar: WebView
     private val handler = Handler(Looper.getMainLooper())
 
-    private lateinit var prefs: android.content.SharedPreferences
-    private var url: String? = null
+    private lateinit var mainUrl: String
+    private lateinit var topBarUrl: String
+    private var topBarHeightDp: Int = 32
 
-    private val reloadRunnable = object : Runnable {
-        override fun run() {
-            webView.reload()
-            handler.postDelayed(this, 600_000)
-        }
-    }
-
-    @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        prefs = getSharedPreferences("url_prefs", Context.MODE_PRIVATE)
-        url = prefs.getString("url", null)
+        // Keep screen on
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
-        window.addFlags(
-            WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON or
-                    WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or
-                    WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
-        )
-
+        // Fullscreen immersive mode
         window.decorView.systemUiVisibility =
             (View.SYSTEM_UI_FLAG_FULLSCREEN
                     or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                     or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY)
 
-        setContentView(R.layout.activity_main)
-        webView = findViewById(R.id.urlView)
+        checkFirstRun()
+    }
 
-        val settings: WebSettings = webView.settings
-        settings.javaScriptEnabled = true
-        settings.domStorageEnabled = true
-        settings.mediaPlaybackRequiresUserGesture = false
-        settings.loadsImagesAutomatically = true
-        settings.cacheMode = WebSettings.LOAD_DEFAULT
+    private fun checkFirstRun() {
+        val prefs = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        val savedMainUrl = prefs.getString("mainUrl", null)
+        val savedTopBarUrl = prefs.getString("topBarUrl", null)
+        val savedTopBarHeight = prefs.getInt("topBarHeightDp", -1)
 
-        webView.webViewClient = WebViewClient()
-
-        if (url == null) {
-            promptForUrl()
+        if (savedMainUrl == null || savedTopBarUrl == null || savedTopBarHeight == -1) {
+            promptUserSettings()
         } else {
-            loadLink(url!!)
-            mirrorToExternalDisplay()
+            mainUrl = savedMainUrl
+            topBarUrl = savedTopBarUrl
+            topBarHeightDp = savedTopBarHeight
+            setupViews()
         }
-
-        handler.postDelayed(reloadRunnable, 600_000)
     }
 
-    private fun loadLink(loadUrl: String) {
-        webView.loadUrl(loadUrl)
-    }
+    private fun promptUserSettings() {
+        val mainInput = EditText(this)
+        mainInput.hint = "Enter main URL"
 
-    private fun promptForUrl() {
-        val input = EditText(this)
-        input.hint = "Enter URL to display"
+        val topBarInput = EditText(this)
+        topBarInput.hint = "Enter top bar URL"
+
+        val heightInput = EditText(this)
+        heightInput.hint = "Top bar height in dp"
+
+        val layout = LinearLayout(this)
+        layout.orientation = LinearLayout.VERTICAL
+        layout.setPadding(30, 20, 30, 20)
+        layout.addView(mainInput)
+        layout.addView(topBarInput)
+        layout.addView(heightInput)
 
         AlertDialog.Builder(this)
-            .setTitle("Set URL")
-            .setView(input)
+            .setTitle("Setup URLs")
+            .setView(layout)
             .setCancelable(false)
             .setPositiveButton("Save") { _, _ ->
+                mainUrl = mainInput.text.toString()
+                topBarUrl = topBarInput.text.toString()
+                topBarHeightDp = heightInput.text.toString().toIntOrNull() ?: 32
 
-                var entered = input.text.toString()
+                val prefs = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+                prefs.edit()
+                    .putString("mainUrl", mainUrl)
+                    .putString("topBarUrl", topBarUrl)
+                    .putInt("topBarHeightDp", topBarHeightDp)
+                    .apply()
 
-                if (!entered.startsWith("http")) {
-                    entered = "https://$entered"
-                }
-
-                prefs.edit().putString("url", entered).apply()
-
-                url = entered
-                loadLink(entered)
-
-                mirrorToExternalDisplay()
+                setupViews()
             }
             .show()
     }
 
+    @Suppress("SetJavaScriptEnabled")
+    private fun setupViews() {
+        val layout = LinearLayout(this)
+        layout.orientation = LinearLayout.VERTICAL
+        layout.setBackgroundColor(0xFF000000.toInt())
+
+        // Top bar WebView (software layer)
+        topBar = WebView(this)
+        val topBarHeightPx = TypedValue.applyDimension(
+            TypedValue.COMPLEX_UNIT_DIP,
+            topBarHeightDp.toFloat(),
+            resources.displayMetrics
+        ).toInt()
+        topBar.layoutParams = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            topBarHeightPx
+        )
+        val topBarSettings: WebSettings = topBar.settings
+        topBarSettings.javaScriptEnabled = true
+        topBarSettings.domStorageEnabled = true
+        topBarSettings.loadsImagesAutomatically = true
+        topBar.setLayerType(View.LAYER_TYPE_SOFTWARE, null)
+        topBar.webViewClient = WebViewClient()
+        val topBarHtml = """
+            <html>
+            <body style="margin:0;background:black;overflow:hidden;">
+            <iframe src="$topBarUrl" style="width:100%;height:100%;border:0;"></iframe>
+            </body>
+            </html>
+        """.trimIndent()
+        topBar.loadData(topBarHtml, "text/html", "utf-8")
+
+        // Main WebView (hardware accelerated)
+        mainView = WebView(this)
+        mainView.layoutParams = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            0,
+            1f
+        )
+        val ws: WebSettings = mainView.settings
+        ws.javaScriptEnabled = true
+        ws.domStorageEnabled = true
+        ws.loadsImagesAutomatically = true
+        ws.mediaPlaybackRequiresUserGesture = false
+        ws.cacheMode = WebSettings.LOAD_CACHE_ELSE_NETWORK
+        ws.setSupportZoom(false)
+        ws.builtInZoomControls = false
+        ws.displayZoomControls = false
+        mainView.setLayerType(View.LAYER_TYPE_HARDWARE, null)
+        mainView.webViewClient = WebViewClient()
+        mainView.loadUrl(mainUrl)
+
+        layout.addView(topBar)
+        layout.addView(mainView)
+        setContentView(layout)
+
+        mirrorToExternalDisplay()
+    }
+
     private fun mirrorToExternalDisplay() {
-        val dm = getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
+        val dm = getSystemService(Context.DISPLAY_SERVICE) as android.hardware.display.DisplayManager
         val displays = dm.displays
 
-        for (display: Display in displays) {
-            if (display.displayId != Display.DEFAULT_DISPLAY) {
-                val presentation = UrlPresentation(this, display)
+        for (display in displays) {
+            if (display.displayId != android.view.Display.DEFAULT_DISPLAY) {
+                val presentation = URLPresentation(this, display)
                 presentation.show()
             }
         }
     }
 
-    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
-        return when (keyCode) {
-
-            KeyEvent.KEYCODE_VOLUME_UP -> {
-                webView.evaluateJavascript(
-                    "window.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowLeft'}));",
-                    null
-                )
-                true
-            }
-
-            KeyEvent.KEYCODE_VOLUME_DOWN -> {
-                webView.evaluateJavascript(
-                    "window.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowRight'}));",
-                    null
-                )
-                true
-            }
-
-            else -> super.onKeyDown(keyCode, event)
-        }
-    }
-
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
-
         if (hasFocus) {
             window.decorView.systemUiVisibility =
                 (View.SYSTEM_UI_FLAG_FULLSCREEN
                         or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                         or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY)
         }
-    }
-
-    override fun onDestroy() {
-        handler.removeCallbacks(reloadRunnable)
-        super.onDestroy()
     }
 }

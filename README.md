@@ -10,7 +10,7 @@ web wrapper designed for CAT/Unifone S22 Flip's outer display, no root needed.
 ## Installation
 build using [Android Studio](https://developer.android.com/studio) API 30 (android 11+) or try [experimental debug apk](https://github.com/LitCastVlog/URLDisplay/releases/tag/v1.0) in releases (will prompt for URL on first launch, clear app data in system settings to reset url)
 
-- adjustable top webview DPI
+- adjustable top webview DPI (outer screen)
 - use volume key to initiate external screen video (same as VLC, haven't figured out complete autoplay yet)
 - external display should also work while app is in background
 - dpad content navigation (while screen opened, if content supports it)
@@ -18,9 +18,11 @@ build using [Android Studio](https://developer.android.com/studio) API 30 (andro
 ### enter desired URLs, adjust top bar height (DPI), save
 <img src="./screenshots/urlprompt.jpg" width="40%"/>
 
-a static/animated page like [NetByMatt's WeatherStar4000/3000 web ports](https://github.com/netbymatt/ws4kp?tab=readme-ov-file#kiosk-mode) or a custom layout on [DakBoard](https://dakboard.com/site), [RSS.app](https://rss.app), etc work best (app uses basic android webview, if you're getting ERR_CLEARTEXT_NOT_PERMITTED, force HTTPS in url)
-18-20dpi works great for RSS.app's "default style" ticker layout 
-
+#### tips:
+- a static/animated page like [NetByMatt's WeatherStar4000/3000 web ports](https://github.com/netbymatt/ws4kp?tab=readme-ov-file#kiosk-mode) / a ticker style layout on [RSS.app](https://rss.app), [DakBoard](https://dakboard.com/site), etc work best on the small screen (app uses basic android webview, if you're getting ERR_CLEARTEXT_NOT_PERMITTED, force HTTPS in url)
+- ~18-20dpi works great for RSS.app's "default style" ticker layout (used in screenshot)
+- paste urls from the bottom up on the S22 (long urls take up the whole box)
+ 
 ## code
 ###### build using [Android Studio](https://developer.android.com/studio) API 30 (android 11+) 
 

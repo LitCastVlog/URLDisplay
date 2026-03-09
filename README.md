@@ -24,7 +24,7 @@ a static/animated page like [NetByMatt's WeatherStar4000/3000 web ports](https:/
 ## code
 ###### build using [Android Studio](https://developer.android.com/studio) API 30 (android 11+) 
 
-- [MainActivity.kt](/app/src/main/java/com/litcast/URLDisplay/MainActivity.kt) is the main config 
-- [UrlPresentation.kt](app/src/main/java/com/litcast/URLDisplay/UrlPresentation.kt) is the outer screen config
+- [MainActivity.kt](/app/src/main/java/com/litcast/URLDisplayDual/MainActivity.kt) is the main config 
+- [UrlPresentation.kt](app/src/main/java/com/litcast/URLDisplayDual/URLPresentation.kt) is the outer screen config
  
   you can replace the prompt with direct urls there if preferred

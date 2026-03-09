@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "com.litcast.URLDisplay"
+    namespace = "com.litcast.URLDisplayDual"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.litcast.URLDisplay"
+        applicationId = "com.litcast.URLDisplayDual"
         minSdk = 30
         targetSdk = 35
         versionCode = 1

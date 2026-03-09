@@ -19,6 +19,9 @@ build using [Android Studio](https://developer.android.com/studio) API 30 (andro
 #### tips:
 - a static/animated page like [NetByMatt's WeatherStar4000/3000 web ports](https://github.com/netbymatt/ws4kp?tab=readme-ov-file#kiosk-mode) or a custom layout on [DakBoard](https://dakboard.com/site), [RSS.app](https://rss.app), etc work best (uses basic android webview, if you're getting ERR_CLEARTEXT_NOT_PERMITTED, force HTTPS in url)
 - paste urls from the bottom up on the S22 (long urls take up the whole box)
+___
+- check out the experimental [dual layout branch](https://github.com/LitCastVlog/URLDisplay/tree/URLDIsplay-Dual-(experimental))
+<img src="https://github.com/LitCastVlog/URLDisplay/blob/URLDIsplay-Dual-(experimental)/screenshots/screenshot.jpg" width="40%"/>
 
 ## code
 ###### build using [Android Studio](https://developer.android.com/studio) API 30 (android 11+) 

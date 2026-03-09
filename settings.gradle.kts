@@ -19,6 +19,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "URLDisplay"
+rootProject.name = "URLDisplayDual"
 include(":app")
  

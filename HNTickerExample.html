@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hacker News RSS Ticker</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:400,600&display=swap" rel="stylesheet">
+
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body { 
+    background:#000; 
+    font-family:"Open Sans", sans-serif; 
+    overflow:hidden; 
+}
+
+.ticker { 
+    height:19px; 
+    display:flex; 
+    align-items:center; 
+    overflow:hidden; 
+}
+
+.track { 
+    display:flex; 
+    white-space:nowrap; 
+    will-change:transform; 
+}
+
+.item { 
+    display:flex; 
+    align-items:center; 
+    color:#fff; 
+    font-size:10px;
+    margin-right:30px;
+}
+
+.item a { 
+    color:#fff; 
+    text-decoration:none; 
+}
+.item a:hover { 
+    filter:brightness(0.75);
+}
+
+.divider { 
+    width:1px; 
+    height:100%; 
+    background:#fff; 
+    margin:0 10px; 
+}
+
+.meta { 
+    display:flex; 
+    align-items:center; 
+    font-size:14px; 
+    white-space:nowrap;
+}
+
+.dot { 
+    width:2px; 
+    height:2px; 
+    background:#fff; 
+    border-radius:50%; 
+    margin:0 9px; 
+}
+</style>
+</head>
+
+<body>
+
+<div class="ticker">
+    <div class="track" id="track"></div>
+</div>
+
+<script>
+class MultiFeedTicker {
+    constructor() {
+        this.feeds = [
+            {
+                url: "https://api.allorigins.win/raw?url=https://hnrss.org/newest",
+                label: "HN"
+            }
+        ];
+
+        this.items = [];
+        this.x = 0;
+        this.speed = 0.4;
+        this.running = false;
+
+        this.init();
+    }
+
+    async init() {
+        await this.loadFeeds();
+        setInterval(() => this.loadFeeds(), 300000);
+    }
+
+    async loadFeeds() {
+        try {
+            const allResults = await Promise.all(this.feeds.map(f => this.fetchFeed(f)));
+            let allItems = allResults.flat();
+
+            allItems = this.dedupe(allItems).sort((a,b) => b.date - a.date);
+
+            if(allItems.length) {
+                this.items = allItems;
+                this.render(this.items);
+            }
+        } catch (e) {
+            console.error("Error loading feeds:", e);
+        }
+    }
+
+    async fetchFeed(feed) {
+        try {
+            const res = await fetch(feed.url);
+            const xmlText = await res.text();
+            return this.parseXML(xmlText, feed.label);
+        } catch (e) {
+            console.warn(`Failed to fetch feed: ${feed.label}`, e);
+            return [];
+        }
+    }
+
+    parseXML(xmlText, label) {
+        const xml = new DOMParser().parseFromString(xmlText, "text/xml");
+        if(xml.querySelector("parsererror")) return [];
+
+        const items = xml.querySelectorAll("item");
+        const out = [];
+
+        items.forEach(item => {
+            const title = item.querySelector("title")?.textContent?.trim();
+            const link = item.querySelector("link")?.textContent?.trim();
+            const pub = item.querySelector("pubDate")?.textContent;
+
+            if(!title || !link) return;
+
+            const date = pub ? new Date(pub) : new Date();
+            out.push({
+                title: title.replace(/\s+/g," ").substring(0,100),
+                link,
+                label,
+                date,
+                time: this.timeAgo(date)
+            });
+        });
+
+        return out;
+    }
+
+    timeAgo(date) {
+        const s = (Date.now() - date.getTime()) / 1000;
+        if(s < 3600) return Math.max(1,Math.floor(s/60)) + "m";
+        if(s < 86400) return Math.floor(s/3600) + "h";
+        return Math.floor(s/86400) + "d";
+    }
+
+    dedupe(arr) {
+        const seen = new Set();
+        return arr.filter(a => {
+            const key = a.title + a.label;
+            if(seen.has(key)) return false;
+            seen.add(key);
+            return true;
+        });
+    }
+
+    render(data) {
+        const track = document.getElementById("track");
+        track.innerHTML = "";
+
+        const items = [...data, ...data];
+
+        items.forEach(item => {
+            const el = document.createElement("div");
+            el.className = "item";
+            el.innerHTML = `
+                <a href="${item.link}" target="_blank">${item.title}</a>
+                <span class="divider"></span>
+                <div class="meta">
+                    <span>${item.label}</span>
+                    <span class="dot"></span>
+                    <span>${item.time}</span>
+                </div>
+            `;
+            track.appendChild(el);
+        });
+
+        this.totalWidth = track.scrollWidth;
+        this.x = 0;
+
+        if(!this.running) {
+            this.running = true;
+            this.loop();
+        }
+    }
+
+    loop() {
+        if(!this.running) return;
+
+        this.x -= this.speed;
+        if(this.x <= -this.totalWidth / 2) this.x = 0;
+
+        document.getElementById("track").style.transform = `translateX(${this.x}px)`;
+        requestAnimationFrame(() => this.loop());
+    }
+}
+
+document.addEventListener("DOMContentLoaded", () => new MultiFeedTicker());
+</script>
+
+</body>
+</html>

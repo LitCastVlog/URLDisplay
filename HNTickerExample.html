@@ -80,7 +80,7 @@ class MultiFeedTicker {
     constructor() {
         this.feeds = [
             {
-                url: "https://api.allorigins.win/raw?url=https://hnrss.org/newest",
+                url: "https://api.allorigins.win/get?url=" + encodeURIComponent("https://hnrss.org/newest"),
                 label: "HN"
             }
         ];
@@ -95,14 +95,13 @@ class MultiFeedTicker {
 
     async init() {
         await this.loadFeeds();
-        setInterval(() => this.loadFeeds(), 300000);
+        setInterval(() => this.loadFeeds(), 300000); // refresh every 5 min
     }
 
     async loadFeeds() {
         try {
             const allResults = await Promise.all(this.feeds.map(f => this.fetchFeed(f)));
             let allItems = allResults.flat();
-
             allItems = this.dedupe(allItems).sort((a,b) => b.date - a.date);
 
             if(allItems.length) {
@@ -117,7 +116,8 @@ class MultiFeedTicker {
     async fetchFeed(feed) {
         try {
             const res = await fetch(feed.url);
-            const xmlText = await res.text();
+            const json = await res.json();
+            const xmlText = json.contents; // allorigins returns { contents: "<xml>..." }
             return this.parseXML(xmlText, feed.label);
         } catch (e) {
             console.warn(`Failed to fetch feed: ${feed.label}`, e);

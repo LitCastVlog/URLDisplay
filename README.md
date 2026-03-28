@@ -21,7 +21,7 @@ build using [Android Studio](https://developer.android.com/studio) API 30 (andro
 
 #### tips:
 - a static/animated page like [NetByMatt's WeatherStar4000/3000 web ports](https://github.com/netbymatt/ws4kp?tab=readme-ov-file#kiosk-mode) / a ticker style layout on [RSS.app](https://rss.app), [DakBoard](https://dakboard.com/site), etc work best on the small screen (app uses basic android webview, if you're getting ERR_CLEARTEXT_NOT_PERMITTED, force HTTPS in url)
-- ~18-20dpi works great for RSS.app's "default style" ticker layout (used in screenshot)
+- ~18-20dpi works great for RSS.app's "Bright Headline" ticker layout (used in screenshot) ([example RSS ticker (HNRSS)](https://htmlpreview.github.io/?https://github.com/LitCastVlog/URLDisplay/blob/URLDIsplay-Dual-(experimental)/HNTickerExample.html))
 - paste urls from the bottom up on the S22 (long urls take up the whole box)
  
 ## code
